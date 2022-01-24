@@ -23,46 +23,15 @@ COPY go.mod .
 RUN go mod tidy
 RUN go build -o wrapper .
 
-# compile stk
-FROM debian:buster as stk-builder
-
-RUN apt update && apt-get install -y build-essential cmake libbluetooth-dev \
-libcurl4-openssl-dev libenet-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
-libgl1-mesa-dev libglew-dev libjpeg-dev libogg-dev libopenal-dev libpng-dev \
-libssl-dev libvorbis-dev libxrandr-dev libx11-dev nettle-dev pkg-config zlib1g-dev \
-git subversion
-
-RUN git clone -b allow-ai https://github.com/markmandel/stk-code.git
-RUN svn co https://svn.code.sf.net/p/supertuxkart/code/stk-assets stk-assets
-RUN rm -rf ./stk-code/.git
-RUN rm -rf ./stk-assets/.svn
-
-RUN cd stk-code && mkdir cmake_build && cd cmake_build \
-    && cmake .. -DBUILD_RECORDER=off -DSERVER_ONLY=ON \
-    && make -j$(nproc)
 
 # final image
-FROM debian:buster
-
-RUN apt update && apt-get install -y libbluetooth3 libbz2-1.0 libc6 \
- libcurl4 libenet7 libfreetype6 libfribidi0 libgcc1 libgl1 libglu1-mesa \
- libglu1 libjpeg62-turbo libogg0 libopenal1 libpng16-16 libstdc++6 libvorbis0a \
- libvorbisenc2 libvorbisfile3 libx11-6 libxrandr2 zlib1g libglew2.1 libharfbuzz0b
-
-RUN useradd -m  -u 1000 supertuxkart
-WORKDIR /home/supertuxkart
-
-COPY --from=stk-builder stk-assets ./stk-assets/
-COPY --from=stk-builder stk-code ./stk-code/
+FROM gcr.io/agones-images/supertuxkart-example:0.4
 
 WORKDIR /home/supertuxkart/stk-code
 
 COPY --from=go-builder /go/src/supertuxkart/wrapper .
-COPY entrypoint.sh .
-COPY server_config.xml .
 
 RUN chown -R supertuxkart:supertuxkart /home/supertuxkart && chmod +x wrapper
 
-ENV ENABLE_PLAYER_TRACKING=false
 USER 1000
 ENTRYPOINT ["./entrypoint.sh"]
