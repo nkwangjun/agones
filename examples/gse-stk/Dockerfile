@@ -35,6 +35,8 @@ WORKDIR /home/supertuxkart/stk-code
 
 COPY --from=go-builder /go/src/supertuxkart/wrapper .
 
+USER root
+
 RUN chown -R supertuxkart:supertuxkart /home/supertuxkart && chmod +x wrapper
 
 USER 1000
