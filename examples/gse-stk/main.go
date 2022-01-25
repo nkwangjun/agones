@@ -20,9 +20,14 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"regexp"
 	"strings"
+	"supertuxkart/api"
+	"supertuxkart/gsemanager"
+	"supertuxkart/logger"
+	"syscall"
 	"time"
 
 	sdk "agones.dev/agones/sdks/go"
@@ -32,9 +37,45 @@ import (
 // logLocation is the path to the location of the SuperTuxKart log file
 const logLocation = "/.config/supertuxkart/config-0.10/server_config.log"
 
+func signalHandler() {
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
+	localPid := os.Getpid()
+	sig := <-sigChan
+
+	log.Println("caught sig, exit", localPid, sig)
+	time.Sleep(3 * time.Second)
+	os.Exit(0)
+}
+
+func startGrpcServer() int {
+	// 启动grpc server，监听agent回调
+	grpcServer := api.GetRpcService()
+	grpcServer.StartGrpcServer()
+	grpcPort := grpcServer.GetGrpcPort()
+
+	// 返回 grpc port
+	return grpcPort
+}
+
+func startHttpServer() int {
+	// 启动 http 服务，方便调试
+	httpProcess := api.NewHttpProcess()
+	httpProcess.StartHttpServer()
+	clientPort := httpProcess.GetHttpPort()
+
+	return clientPort
+}
+
 // main intercepts the log file of the SuperTuxKart gameserver and uses it
 // to determine if the game server is ready or not.
 func main() {
+	// 启动Grpc Server
+	grpcPort := startGrpcServer()
+
+	// 启动http服务
+	clientPort := startHttpServer()
+
 	log.SetPrefix("[wrapper] ")
 	input := flag.String("i", "", "the command and arguments to execute the server binary")
 
@@ -42,21 +83,6 @@ func main() {
 	// If it is off, still log messages about players, but don't actually call the player tracking functions.
 	enablePlayerTracking := flag.Bool("player-tracking", false, "If true, player tracking will be enabled.")
 	flag.Parse()
-
-	log.Println("Connecting to Agones with the SDK")
-	//s, err := sdk.NewSDK()
-	//if err != nil {
-	//	log.Fatalf("could not connect to SDK: %v", err)
-	//}
-
-	//if *enablePlayerTracking {
-	//	if err = s.Alpha().SetPlayerCapacity(8); err != nil {
-	//		log.Fatalf("could not set play count: %v", err)
-	//	}
-	//}
-
-	log.Println("Starting health checking")
-	//go doHealth(s)
 
 	log.Println("Starting wrapper for SuperTuxKart")
 	log.Printf("Command being run for SuperTuxKart server: %s \n", *input)
@@ -71,6 +97,16 @@ func main() {
 	if err := cmd.Start(); err != nil {
 		log.Fatalf("error starting cmd: %v", err)
 	}
+
+	log.Println("Connecting to Gse with the SDK")
+	gseManager := gsemanager.GetGseManager()
+	err := gseManager.ProcessReady([]string{"/local/game/log/log.txt"}, int32(clientPort), int32(grpcPort))
+	if err != nil {
+		logger.Fatal("processready fail")
+	}
+
+	log.Println("Starting health checking")
+	//go doHealth(s)
 
 	// SuperTuxKart refuses to output to foreground, so we're going to
 	// poll the server log.
