@@ -13,16 +13,16 @@
 # limitations under the License.
 
 # build go
-FROM golang:1.17.2 as go-builder
+FROM golang:1.16.12 as go-builder
 WORKDIR /go/src/supertuxkart
 
 RUN apt-get update && apt-get install -y curl tar xz-utils
 
 COPY main.go .
-ADD api .
-ADD grpcsdk .
-ADD gsemanager .
-ADD logger .
+COPY api ./api
+COPY grpcsdk ./grpcsdk
+COPY gsemanager ./gsemanager
+COPY logger ./logger
 COPY go.mod .
 RUN go mod tidy
 RUN go build -o wrapper .
