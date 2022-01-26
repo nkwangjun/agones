@@ -104,7 +104,7 @@ func (g *gsemanager) ActivateGameServerSession(gameServerSessionId string, maxPl
 }
 
 // 3. AcceptPlayerSession
-func (g *gsemanager) AcceptPlayerSession(playerSessionId string) (*grpcsdk.GseResponse, error) {
+func (g *gsemanager) AcceptPlayerSession(playerSessionId string) (*grpcsdk.AuxProxyResponse, error) {
 	logger.Info("start to AcceptPlayerSession", zap.String("playerSessionId", playerSessionId))
 	req := &grpcsdk.AcceptPlayerSessionRequest{
 		GameServerSessionId: g.gameServerSession.GameServerSessionId,
@@ -115,7 +115,7 @@ func (g *gsemanager) AcceptPlayerSession(playerSessionId string) (*grpcsdk.GseRe
 }
 
 // 4. RemovePlayerSession
-func (g *gsemanager) RemovePlayerSession(playerSessionId string) (*grpcsdk.GseResponse, error) {
+func (g *gsemanager) RemovePlayerSession(playerSessionId string) (*grpcsdk.AuxProxyResponse, error) {
 	logger.Info("start to RemovePlayerSession", zap.String("playerSessionId", playerSessionId))
 	req := &grpcsdk.RemovePlayerSessionRequest{
 		GameServerSessionId: g.gameServerSession.GameServerSessionId,
@@ -126,7 +126,7 @@ func (g *gsemanager) RemovePlayerSession(playerSessionId string) (*grpcsdk.GseRe
 }
 
 // 5. TerminateGameServerSession
-func (g *gsemanager) TerminateGameServerSession() (*grpcsdk.GseResponse, error) {
+func (g *gsemanager) TerminateGameServerSession() (*grpcsdk.AuxProxyResponse, error) {
 	logger.Info("start to TerminateGameServerSession")
 	req := &grpcsdk.TerminateGameServerSessionRequest{
 		GameServerSessionId: g.gameServerSession.GameServerSessionId,
@@ -136,7 +136,7 @@ func (g *gsemanager) TerminateGameServerSession() (*grpcsdk.GseResponse, error) 
 }
 
 // 6. ProcessEnding
-func (g *gsemanager) ProcessEnding() (*grpcsdk.GseResponse, error) {
+func (g *gsemanager) ProcessEnding() (*grpcsdk.AuxProxyResponse, error) {
 	logger.Info("start to ProcessEnding")
 	req := &grpcsdk.ProcessEndingRequest{}
 
@@ -164,7 +164,7 @@ func (g *gsemanager) DescribePlayerSessions(gameServerSessionId, playerId, playe
 }
 
 // 8. UpdatePlayerSessionCreationPolicy
-func (g *gsemanager) UpdatePlayerSessionCreationPolicy(newPolicy string) (*grpcsdk.GseResponse, error) {
+func (g *gsemanager) UpdatePlayerSessionCreationPolicy(newPolicy string) (*grpcsdk.AuxProxyResponse, error) {
 	logger.Info("start to UpdatePlayerSessionCreationPolicy", zap.String("newPolicy", newPolicy))
 	req := &grpcsdk.UpdatePlayerSessionCreationPolicyRequest{
 		GameServerSessionId:            g.gameServerSession.GameServerSessionId,
@@ -175,7 +175,7 @@ func (g *gsemanager) UpdatePlayerSessionCreationPolicy(newPolicy string) (*grpcs
 }
 
 // 9.ReportCustomData
-func (g *gsemanager) ReportCustomData(currentCustomCount, maxCustomCount int32) (*grpcsdk.GseResponse, error) {
+func (g *gsemanager) ReportCustomData(currentCustomCount, maxCustomCount int32) (*grpcsdk.AuxProxyResponse, error) {
 	logger.Info("start to UpdatePlayerSessionCreationPolicy", zap.Int32("currentCustomCount", currentCustomCount),
 		zap.Int32("maxCustomCount", maxCustomCount))
 	req := &grpcsdk.ReportCustomDataRequest{

@@ -70,17 +70,17 @@ func (s *rpcService) OnHealthCheck(ctx context.Context, req *grpcsdk.HealthCheck
 	return resp, nil
 }
 
-func (s *rpcService) OnStartGameServerSession(ctx context.Context, req *grpcsdk.StartGameServerSessionRequest) (*grpcsdk.GseResponse, error) {
+func (s *rpcService) OnStartGameServerSession(ctx context.Context, req *grpcsdk.StartGameServerSessionRequest) (*grpcsdk.ProcessResponse, error) {
 	gseManager := gsemanager.GetGseManager()
 	gseManager.SetGameServerSession(req.GameServerSession)
 	gseManager.ActivateGameServerSession(req.GameServerSession.GameServerSessionId, req.GameServerSession.MaxPlayers)
 
-	resp := new(grpcsdk.GseResponse)
+	resp := new(grpcsdk.ProcessResponse)
 
 	return resp, nil
 }
 
-func (s *rpcService) OnProcessTerminate(ctx context.Context, req *grpcsdk.ProcessTerminateRequest) (*grpcsdk.GseResponse, error) {
+func (s *rpcService) OnProcessTerminate(ctx context.Context, req *grpcsdk.ProcessTerminateRequest) (*grpcsdk.ProcessResponse, error) {
 	gseManager := gsemanager.GetGseManager()
 	gseManager.SetTerminationTime(req.TerminationTime)
 	//结束游戏会话
@@ -89,6 +89,6 @@ func (s *rpcService) OnProcessTerminate(ctx context.Context, req *grpcsdk.Proces
 	// 进程退出
 	gseManager.ProcessEnding()
 
-	resp := new(grpcsdk.GseResponse)
+	resp := new(grpcsdk.ProcessResponse)
 	return resp, nil
 }

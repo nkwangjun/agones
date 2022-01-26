@@ -23,6 +23,7 @@ import (
 	"os/signal"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"supertuxkart/api"
 	"supertuxkart/gsemanager"
@@ -32,6 +33,7 @@ import (
 
 	sdk "agones.dev/agones/sdks/go"
 	"github.com/hpcloud/tail"
+	"math/rand"
 )
 
 // logLocation is the path to the location of the SuperTuxKart log file
@@ -73,8 +75,9 @@ func main() {
 	// 启动Grpc Server
 	grpcPort := startGrpcServer()
 
-	// 启动http服务
-	clientPort := startHttpServer()
+	// 随机端口
+	rand.Seed(2)
+	clientPort := 20000 + rand.Intn(10000)
 
 	log.SetPrefix("[wrapper] ")
 	input := flag.String("i", "", "the command and arguments to execute the server binary")
@@ -88,6 +91,7 @@ func main() {
 	log.Printf("Command being run for SuperTuxKart server: %s \n", *input)
 
 	cmdString := strings.Split(*input, " ")
+	cmdString = append(cmdString, "--port="+strconv.Itoa(clientPort))
 	command, args := cmdString[0], cmdString[1:]
 
 	cmd := exec.Command(command, args...) // #nosec
