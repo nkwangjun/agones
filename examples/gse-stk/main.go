@@ -88,11 +88,12 @@ func main() {
 	flag.Parse()
 
 	log.Println("Starting wrapper for SuperTuxKart")
-	log.Printf("Command being run for SuperTuxKart server: %s \n", *input)
 
 	cmdString := strings.Split(*input, " ")
 	cmdString = append(cmdString, "--port="+strconv.Itoa(clientPort))
 	command, args := cmdString[0], cmdString[1:]
+
+	log.Printf("Command being run for SuperTuxKart server: %s \n", cmdString)
 
 	cmd := exec.Command(command, args...) // #nosec
 	cmd.Stderr = os.Stderr
