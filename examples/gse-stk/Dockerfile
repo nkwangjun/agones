@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # build go
-FROM golang:1.16.12 as go-builder
+FROM golang:1.17.6 as go-builder
 WORKDIR /go/src/supertuxkart
 
 RUN apt-get update && apt-get install -y curl tar xz-utils
